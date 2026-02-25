@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MY Portfolio</title>
+  <!-- fonts & base icons (no frameworks) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* ---------- RESET & GLOBAL ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      cursor: none; /* will be overridden on body if not supported */
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0b0d15;
+      color: #eef2f5;
+      line-height: 1.6;
+      overflow-x: hidden;
+      transition: background-color 0.4s ease, color 0.3s ease;
+    }
+    body.light-mode {
+      background-color: #f0f4fa;
+      color: #1c1e2a;
+    }
+    /* custom cursor */
+    .cursor, .cursor-follower {
+      position: fixed;
+      pointer-events: none;
+      border-radius: 50%;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s ease;
+    }
+    .cursor {
+      width: 10px;
+      height: 10px;
+      background: #492d7b;
+      box-shadow: 0 0 20px #60d1de;
+      transition: width 0.2s, height 0.2s, background 0.2s;
+    }
+    .cursor-follower {
+      width: 40px;
+      height: 40px;
+      border: 2px solid rgba(159, 122, 234, 0.5);
+      backdrop-filter: blur(1px);
+      transition: 0.1s ease;
+    }
+    /* progress indicator */
+    #scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 0%;
+      height: 4px;
+      background: linear-gradient(90deg, #b48aff, #70c8ff, #b48aff);
+      box-shadow: 0 0 20px #7a4ddb;
+      z-index: 1000;
+      border-radius: 0 4px 4px 0;
+    }
+    /* loading animation */
+    #loader {
+      position: fixed;
+      inset: 0;
+      background: #0b0d15;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.6s visibility 0.6s;
+    }
+    body.light-mode #loader {
+      background: #f0f4fa;
+    }
+    .loader-glow {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #9f7aea 0%, transparent 70%);
+      animation: pulseGlow 1.5s infinite alternate;
+    }
+    @keyframes pulseGlow {
+      0% { opacity: 0.4; transform: scale(0.8); box-shadow: 0 0 0 0 #b48aff; }
+      100% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 60px #b48aff; }
+    }
+    /* navigation */
+    nav {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(20, 22, 36, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(159, 122, 234, 0.25);
+      border-radius: 60px;
+      padding: 12px 28px;
+      z-index: 100;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(159,122,234,0.2) inset;
+    }
+    body.light-mode nav {
+      background: rgba(240, 244, 250, 0.7);
+      border-color: rgba(100, 80, 200, 0.3);
+    }
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+      align-items: center;
+    }
+    .nav-links a {
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #e0e0ff;
+      transition: 0.2s;
+      position: relative;
+    }
+    body.light-mode .nav-links a {
+      color: #2c2a4a;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0%;
+      height: 2px;
+      background: linear-gradient(90deg, #b48aff, #7bc5ff);
+      transition: 0.3s;
+    }
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+    /* theme toggle */
+    #theme-toggle {
+      background: transparent;
+      border: none;
+      font-size: 1.6rem;
+      color: #e0e0ff;
+      cursor: pointer;
+      margin-left: 20px;
+      transition: 0.2s;
+    }
+    body.light-mode #theme-toggle {
+      color: #3a2c5a;
+    }
+    /* main container */
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 30px;
+    }
+    /* sections */
+    section {
+      padding: 120px 0 80px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+    }
+    /* glass card */
+    .glass-card {
+      background: rgba(20, 22, 36, 0.4);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 42px;
+      padding: 2.5rem;
+      box-shadow: 0 30px 50px -20px rgba(0,0,0,0.8), 0 0 0 1px rgba(159,122,234,0.2) inset;
+      transition: border 0.3s;
+    }
+    body.light-mode .glass-card {
+      background: rgba(255,255,255,0.4);
+      border-color: rgba(159,122,234,0.4);
+    }
+    .animated-border {
+      position: relative;
+      border-radius: 42px;
+      overflow: hidden;
+    }
+    .animated-border::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      background: linear-gradient(60deg, #b48aff, #6fc8ff, #b48aff, #6fc8ff);
+      background-size: 300% 300%;
+      animation: borderGlow 6s ease infinite;
+      border-radius: 44px;
+      z-index: -1;
+    }
+    @keyframes borderGlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    /* floating blobs background */
+    .blob {
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle at 30% 50%, rgba(159,122,234,0.25), transparent 70%);
+      border-radius: 50%;
+      filter: blur(70px);
+      z-index: -2;
+      animation: float 20s infinite alternate ease-in-out;
+    }
+    .blob2 {
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(37, 189, 237, 0.15), transparent 70%);
+      bottom: 0;
+      right: 0;
+      animation: float2 25s infinite alternate;
+    }
+    @keyframes float {
+      0% { transform: translate(-20%, -20%) scale(1); }
+      100% { transform: translate(10%, 30%) scale(1.2); }
+    }
+    @keyframes float2 {
+      0% { transform: translate(10%, 10%) scale(1); }
+      100% { transform: translate(-20%, -20%) scale(1.4); }
+    }
+    /* particle canvas */
+    #particles-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+    }
+    /* hero */
+    .hero-content {
+      max-width: 900px;
+    }
+    .hero-name {
+      font-size: 4.8rem;
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.1;
+      background: linear-gradient(to right, #4f12d4, #5311d5, #9dd9ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    body.light-mode .hero-name {
+      background: linear-gradient(145deg, #1c1e3a, #4c3c7c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .typed-container {
+      font-size: 2rem;
+      font-weight: 300;
+      margin: 20px 0 30px;
+      height: 3.5rem;
+    }
+    #typed-text {
+      color: #050406;
+      font-weight: 600;
+      text-shadow: 0 0 10px #594e6f;
+    }
+    .cta-group {
+      display: flex;
+      gap: 25px;
+      flex-wrap: wrap;
+    }
+    .magnetic-btn {
+      background: rgba(159,122,234,0.12);
+      border: 1.5px solid rgba(159,122,234,0.6);
+      border-radius: 60px;
+      padding: 14px 38px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #f0eaff;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 10px 20px -10px #00000070, 0 0 20px #9f7aea30;
+      transition: 0.2s;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    body.light-mode .magnetic-btn {
+      color: #1f1b36;
+      border-color: #7a5dc7;
+      background: rgba(255,255,255,0.3);
+    }
+    .magnetic-btn:hover {
+      background: #9f7aea;
+      color: #0b0d15;
+      border-color: #b48aff;
+      box-shadow: 0 0 35px #b48aff;
+    }
+    /* skill bars */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px,1fr));
+      gap: 32px;
+      margin-top: 50px;
+    }
+    .skill-item {
+      margin-bottom: 20px;
+    }
+    .skill-info {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .progress-bar-bg {
+      height: 16px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 40px;
+      box-shadow: inset 0 0 12px #000000;
+    }
+    .progress-fill {
+      height: 16px;
+      background: linear-gradient(90deg, #b48aff, #82d0ff);
+      border-radius: 40px;
+      width: 0%;
+      transition: width 1.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+      box-shadow: 0 0 18px #b48aff;
+    }
+    .circular-meter {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .circular-chart {
+      width: 100px;
+      height: 100px;
+    }
+    .circle-bg { stroke: #2a2640; stroke-width: 8; fill: none; }
+    .circle-progress {
+      stroke: url(#gradFill);
+      stroke-width: 8;
+      fill: none;
+      stroke-dasharray: 251.2; /* 2*pi*40 */
+      stroke-dashoffset: 251.2;
+      transition: stroke-dashoffset 1.5s;
+      filter: drop-shadow(0 0 8px #b48aff);
+    }
+    /* project cards */
+    .projects-grid {
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+      margin-top: 40px;
+    }
+    .project-card {
+      background: rgba(22,24,38,0.6);
+      backdrop-filter: blur(8px);
+      border-radius: 36px;
+      padding: 24px;
+      width: 300px;
+      border: 1px solid rgba(159,122,234,0.2);
+      transition: transform 0.3s, box-shadow 0.3s;
+      transform-style: preserve-3d;
+      box-shadow: 0 20px 30px -10px black;
+    }
+    .project-card:hover {
+      box-shadow: 0 30px 40px -10px #b48aff80, 0 0 0 2px #b48aff inset;
+    }
+    .project-img {
+      height: 160px;
+      background: linear-gradient(145deg, #3f3470, #121212);
+      border-radius: 24px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #d2bbff;
+      font-weight: 600;
+    }
+    /* contact */
+    .social-icon {
+      font-size: 2.8rem;
+      margin: 0 30px;
+      color: #beb0ff;
+      transition: 0.2s;
+      display: inline-block;
+    }
+    .social-icon:hover {
+      transform: scale(1.2) translateY(-5px);
+      color: #fff;
+      text-shadow: 0 0 30px #b48aff, 0 0 15px #b48aff;
+    }
+    /* footer / scroll reveals */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: 0.8s cubic-bezier(0.2, 0.8, 0.3, 1);
+      
+    }
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    /* parallax */
+    .parallax-layer {
+      transition: transform 0.1s ease-out;
+    }
+    /* responsiveness */
+    @media (max-width: 800px) {
+      .hero-name { font-size: 3.4rem; }
+      nav { padding: 10px 18px; }
+      .nav-links { gap: 18px; }
+    }
+    
+  </style>
+</head>
+<body>
+  <!-- loader -->
+  <div id="loader"><div class="loader-glow"></div></div>
+  <!-- custom cursor -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-follower" id="cursor-follower"></div>
+  <!-- progress bar -->
+  <div id="scroll-progress"></div>
+  <!-- floating background blobs -->
+  <div class="blob" style="top: -100px; left: -100px;"></div>
+  <div class="blob blob2" style="bottom: -150px; right: -80px;"></div>
+  <canvas id="particles-canvas"></canvas>
+  <!-- navigation -->
+  <nav>
+    <ul class="nav-links">
+      <li><a href="#hero">HOME</a></li>
+      <li><a href="#about">ABOUT</a></li>
+      <li><a href="#skills">SKILLS</a></li>
+      <li><a href="#projects">WORK</a></li>
+      <li><a href="#contact">CONTACT</a></li>
+      <li><button id="theme-toggle" aria-label="theme toggle"><i class="fas fa-moon"></i></button></li>
+    </ul>
+  </nav>
+  <!-- main -->
+  <main>
+    <!-- hero -->
+    <section id="hero" style="padding-top: 150px;">
+      <div class="container hero-content">
+        <div class="glass-card animated-border" style="background: rgba(10,8,20,0.3);">
+          <h1 class="hero-name reveal">Rakshitha S S</h1>
+          <div class="typed-container reveal"><span id="typed-text"></span><span class="cursor-typed">|</span></div>
+          
+          <p class="reveal" style="font-size:1.5rem; font-weight:300; margin-bottom:2rem; color:rgb(19, 19, 107)">Electronics & Communication → full‑stack dreamer</p>
+          <div class="cta-group reveal">
+            <a href="#projects" class="magnetic-btn" data-strength="20">View Projects</a>
+            <a href="#skills" class="magnetic-btn" data-strength="20">View Skills</a>
+            <a href="#contact" class="magnetic-btn" data-strength="20">Contact Me</a>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- about -->
+    <section id="about">
+      <div class="container">
+        <div class="glass-card animated-border reveal" style="max-width:900px; margin:0 auto;">
+          <h2 style="font-size:3rem; margin-bottom:1.5rem;">⚡ About me</h2>
+          <p style="font-size:1.4rem; font-weight:300; ">Third-year Electronics & Communication Engineering student aspiring to become a full-stack developer.Learning HTML, CSS, JavaScript, and learning modern frameworks to build impactful projects.</p>
+        </div>
+      </div>
+    </section>
+    <!-- skills -->
+    <section id="skills">
+      <div class="container">
+        
+        <h2 class="reveal" style="font-size:3.5rem;">Dev arsenal</h2>
+        <div class="skills-grid">
+          <!-- bar skills (6 items) -->
+          <div class="skill-item reveal">
+            <div class="skill-info"><span>HTML</span><span class="percent" data-target="45">0%</span></div>
+            <div class="progress-bar-bg"><div class="progress-fill" data-percent="95"></div></div>
+          </div>
+          <div class="skill-item reveal">
+            <div class="skill-info"><span>CSS</span><span class="percent" data-target="40">0%</span></div>
+            <div class="progress-bar-bg"><div class="progress-fill" data-percent="92"></div></div>
+          </div>
+          <div class="skill-item reveal">
+            <div class="skill-info"><span>JavaScript</span><span class="percent" data-target="30">0%</span></div>
+            <div class="progress-bar-bg"><div class="progress-fill" data-percent="88"></div></div>
+          </div>
+          <div class="skill-item reveal">
+            <div class="skill-info"><span>Java</span><span class="percent" data-target="30">0%</span></div>
+            <div class="progress-bar-bg"><div class="progress-fill" data-percent="80"></div></div>
+          </div>
+          <div class="skill-item reveal">
+            <div class="skill-info"><span>SQL</span><span class="percent" data-target="10">0%</span></div>
+            <div class="progress-bar-bg"><div class="progress-fill" data-percent="85"></div></div>
+          </div>
+          <div class="skill-item reveal">
+            <div class="skill-info"><span>React</span><span class="percent" data-target="5">0%</span></div>
+            <div class="progress-bar-bg"><div class="progress-fill" data-percent="90"></div></div>
+          </div>
+          <div class="skill-item reveal">
+            <div class="skill-info"><span>Python</span><span class="percent" data-target="30">0%</span></div>
+            <div class="progress-bar-bg"><div class="progress-fill" data-percent="90"></div></div>
+          </div>
+          <h2 class="reveal" style="font-size:3.5rem;">Soft skills</h2>
+        <div class="skill-item reveal">
+            <div class="skill-info"><span>Communication</span><span class="percent" data-target="80">0%</span></div>
+            <div class="progress-bar-bg"><div class="progress-fill" data-percent="95"></div></div>
+          </div>
+          <div class="skill-item reveal">
+            <div class="skill-info"><span>TeamWork</span><span class="percent" data-target="92">0%</span></div>
+            <div class="progress-bar-bg"><div class="progress-fill" data-percent="95"></div></div>
+          </div>
+          <div class="skill-item reveal">
+            <div class="skill-info"><span>Self Learning</span><span class="percent" data-target="90">0%</span></div>
+            <div class="progress-bar-bg"><div class="progress-fill" data-percent="95"></div></div>
+          </div>
+           <div class="skill-item reveal">
+            <div class="skill-info"><span>Leadership</span><span class="percent" data-target="89">0%</span></div>
+            <div class="progress-bar-bg"><div class="progress-fill" data-percent="95"></div></div>
+          </div>
+          <!-- circular meters for react/node -->
+             <h2 class="reveal" style="font-size:3.5rem;">Tools</h2>
+          <div class="circular-meter reveal">
+            <svg viewBox="0 0 100 100" class="circular-chart">
+              <defs><linearGradient id="gradFill" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#b48aff"/><stop offset="100%" stop-color="#82d0ff"/></linearGradient></defs>
+              <circle class="circle-bg" cx="50" cy="50" r="40"></circle>
+              <circle class="circle-progress" cx="50" cy="50" r="40" transform="rotate(-90 50 50)" data-percent="10"></circle>
+              <text x="50" y="58" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold">Git/GitHub</text>
+            </svg>
+          </div>
+          <div class="circular-meter reveal">
+            <svg viewBox="0 0 100 100" class="circular-chart">
+              <circle class="circle-bg" cx="50" cy="50" r="40"></circle>
+              <circle class="circle-progress" cx="50" cy="50" r="40" transform="rotate(-90 50 50)" data-percent="20"></circle>
+              <text x="50" y="58" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold">VS Code</text>
+            </svg>
+          </div>
+          
+        </div>
+      </div>
+    </section>
+    <!-- projects -->
+    <section id="projects">
+      <div class="container">
+        <h2 class="reveal" style="font-size:3.5rem;">✨ Creations</h2>
+        <div class="projects-grid">
+          <div class="project-card tilt-card reveal" data-tilt data-tilt-scale="1.02">
+            <div class="project-img">🧮 calculator preview</div>
+            <h3>JavaScript Calculator</h3>
+            <p style="margin:10px 0">clean UI + keyboard support</p>
+            <div><a href=" https://rakshitha-34.github.io/calculator/" class="magnetic-btn" style="padding:8px 18px;">Live demo</a> <a href=" https://github.com/Rakshitha-34/calculator.git" class="magnetic-btn" style="padding:8px 18px;">GitHub</a></div>
+          </div>
+          <div class="project-card tilt-card reveal" data-tilt data-tilt-scale="1.02">
+            <div class="project-img">✅ Task manager</div>
+            <h3>Task Manager App</h3>
+            <p style="margin:10px 0">drag‑drop, local storage</p>
+            <div><a href=" https://rakshitha-34.github.io/TO-DO-APP/" class="magnetic-btn" style="padding:8px 18px;">Live demo</a> <a href="https://github.com/Rakshitha-34/TO-DO-APP.git" class="magnetic-btn" style="padding:8px 18px;">GitHub</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- contact -->
+    <section id="contact">
+      <div class="container">
+        <div class="glass-card reveal" style="text-align:center; max-width:700px; margin:0 auto;">
+          <h2 style="font-size:3rem;">Let's connect</h2>
+          <div style="margin: 40px 0;">
+            <a href="https://www.linkedin.com/in/rakshitha2005" class="social-icon"><i class="fab fa-linkedin"></i></a>
+            <a href="https://github.com/Rakshitha-34" class="social-icon"><i class="fab fa-github"></i></a>
+            <a href="mailto:rakshithasasikala2005@gmail.com" class="social-icon"><i class="fas fa-envelope"></i></a>
+          </div>
+          <p style="font-size:1.3rem;">Thank you!!</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function() {
+      'use strict';
+
+      // ------ loader ------
+      window.addEventListener('load', () => {
+        document.getElementById('loader').style.opacity = '0';
+        setTimeout(() => {
+          document.getElementById('loader').style.visibility = 'hidden';
+        }, 600);
+      });
+
+      // ------ custom cursor (with magnetic effect later) ------
+      const cursor = document.getElementById('cursor');
+      const follower = document.getElementById('cursor-follower');
+      document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+        follower.style.left = e.clientX + 'px';
+        follower.style.top = e.clientY + 'px';
+      });
+      // magnetic buttons (simple expand)
+      document.querySelectorAll('.magnetic-btn').forEach(btn => {
+        btn.addEventListener('mousemove', (e) => {
+          const rect = btn.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width/2;
+          const y = e.clientY - rect.top - rect.height/2;
+          btn.style.transform = `translate(${x*0.3}px, ${y*0.2}px) scale(1.05)`;
+        });
+        btn.addEventListener('mouseleave', () => {
+          btn.style.transform = '';
+        });
+      });
+
+      // ------ theme toggle ------
+      const themeToggle = document.getElementById('theme-toggle');
+      themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
+        const icon = themeToggle.querySelector('i');
+        if (document.body.classList.contains('light-mode')) {
+          icon.className = 'fas fa-sun';
+        } else {
+          icon.className = 'fas fa-moon';
+        }
+      });
+
+      // ------ particles (requestAnimationFrame) ------
+      const canvas = document.getElementById('particles-canvas');
+      const ctx = canvas.getContext('2d');
+      let width, height;
+      let particles = [];
+      function initParticles() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+        particles = [];
+        for (let i = 0; i < 60; i++) {
+          particles.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            radius: Math.random() * 3 + 1,
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: (Math.random() - 0.5) * 0.2,
+            color: `rgba(180, 138, 255, ${Math.random() * 0.5 + 0.2})`
+          });
+        }
+      }
+      function drawParticles() {
+        ctx.clearRect(0, 0, width, height);
+        particles.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
+          ctx.fillStyle = p.color;
+          ctx.shadowColor = '#b48aff';
+          ctx.shadowBlur = 12;
+          ctx.fill();
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0 || p.x > width) p.vx *= -1;
+          if (p.y < 0 || p.y > height) p.vy *= -1;
+        });
+        requestAnimationFrame(drawParticles);
+      }
+      window.addEventListener('resize', () => { initParticles(); });
+      initParticles();
+      drawParticles();
+
+      // ------ typing effect ------
+      const typedEl = document.getElementById('typed-text');
+      const phrases = ['Aspiring Full Stack Developer', 'Electronics & Communication Engineer'];
+      let i = 0, j = 0, isDeleting = false;
+      function typeEffect() {
+        const current = phrases[i % phrases.length];
+        if (isDeleting) {
+          typedEl.textContent = current.substring(0, j-1);
+          j--;
+        } else {
+          typedEl.textContent = current.substring(0, j+1);
+          j++;
+        }
+        if (!isDeleting && j === current.length + 1) {
+          isDeleting = true;
+          setTimeout(typeEffect, 1500);
+        } else if (isDeleting && j === 0) {
+          isDeleting = false;
+          i++;
+          setTimeout(typeEffect, 300);
+        } else {
+          setTimeout(typeEffect, isDeleting ? 50 : 100);
+        }
+      }
+      setTimeout(typeEffect, 500);
+
+      // ------ scroll progress + reveal + skill bars animation (Intersection Observer) ------
+      const progressBar = document.getElementById('scroll-progress');
+      window.addEventListener('scroll', () => {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+        progressBar.style.width = scrolled + '%';
+      });
+
+      const revealElements = document.querySelectorAll('.reveal');
+      const skillPercent = document.querySelectorAll('.percent');
+      const progressFills = document.querySelectorAll('.progress-fill');
+      const circles = document.querySelectorAll('.circle-progress');
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            // if it's skills section, fill numbers & bars
+            if (entry.target.closest('#skills')) {
+              progressFills.forEach(fill => {
+                const percent = fill.dataset.percent;
+                fill.style.width = percent + '%';
+              });
+              skillPercent.forEach(span => {
+                const target = span.dataset.target;
+                if (target) {
+                  let count = 0;
+                  const upd = setInterval(() => {
+                    if (count <= target) {
+                      span.innerText = count + '%';
+                      count++;
+                    } else clearInterval(upd);
+                  }, 15);
+                }
+              });
+              circles.forEach(c => {
+                const p = c.dataset.percent || 82;
+                const dash = 251.2 - (251.2 * p / 100);
+                c.style.strokeDashoffset = dash;
+              });
+            }
+          }
+        });
+      }, { threshold: 0.3 });
+
+      revealElements.forEach(el => observer.observe(el));
+
+      // ------ 3D tilt (simple) ------
+      document.querySelectorAll('.tilt-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          const rotX = (y - centerY) / 20;
+          const rotY = (centerX - x) / 20;
+          card.style.transform = `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.02)`;
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = '';
+        });
+      });
+
+      // ------ parallax (subtle) ------
+      window.addEventListener('scroll', () => {
+        const scrolled = window.pageYOffset;
+        document.querySelectorAll('.glass-card').forEach(card => {
+          card.style.transform = `translateY(${scrolled * 0.02}px)`;
+        });
+      });
+
+      // ------ magnetic nav effect on cursor ------
+    })();
+  </script>
+  <!-- ensure no external libs are used (only fontawesome icons) -->
+</body>
+</html>
